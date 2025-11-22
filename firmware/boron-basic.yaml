@@ -1,0 +1,121 @@
+esphome:
+  name: Boron
+  friendly-name: boron
+
+esp32:
+  variant: esp32
+  framework:
+    type: esp-idf
+
+logger:
+ota:
+  platform: esphome
+
+safe_mode:
+  disabled: true
+
+api:
+  reboot_timeout: 0s
+
+
+wifi:
+  reboot_timeout: 0s
+  networks:
+  - ssid: !secret wifi1_ssid
+    password: !secret wifi1_password
+  - ssid: !secret wifi2_ssid
+    password: !secret wifi2_password
+  - ssid: !secret wifi3_ssid
+    password: !secret wifi3_password
+  - ssid: !secret wifi4_ssid
+    password: !secret wifi4_password
+
+
+status_led:
+  pin: GPIO14
+
+web_server:
+  port: 80
+
+output:
+  - platform: ledc
+    pin: GPIO25
+    id: LED
+    frequency: 19531
+    on_value:
+    then:
+      - output.set_level:
+          id: LED2
+          level: !lambda "return state;"
+      - output.set_level:
+          id: LED3
+          level: !lambda "return state;"
+      - output.set_level:
+          id: LED4
+          level: !lambda "return state;"
+
+  - platform: ledc
+    pin: GPIO26
+    id: LED2
+    frequency: 19531
+    internal: true
+
+  - platform: ledc
+    pin: GPIO27
+    id: LED3
+    frequency: 19531
+    internal: true
+
+  - platform: ledc
+    pin: GPIO4
+    id: LED4
+    frequency: 19531
+    internal: true
+
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO36
+      inverted: True
+    name: ${device_name} Input 1
+    filters:
+      - delayed_on_off: 10ms
+
+sensor:
+  - platform: adc
+    pin: GPIO33
+    id: temp_analog_reading
+    attenuation: 12db
+
+  - platform: resistance
+    sensor: temp_analog_reading
+    id: temp_resistance_reading
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: ${device_name} Temperature
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+
+  - platform: adc
+    pin: GPIO34
+    attenuation: 12db
+    name: ${device_name} Voltage
+    accuracy_decimals: 1
+    filters:
+      - multiply: 10.85
+
+  - platform: adc
+    pin: GPIO35
+    attenuation: 12db
+    name: ${device_name} Current
+    accuracy_decimals: 2
+    filters:
+      - offset: -0.794
+      - multiply: 16.13
+    unit_of_measurement: A
