@@ -1,6 +1,12 @@
 esphome:
   name: boron
   friendly_name: boron
+  # Restore saved brightness at boot
+  on_boot:
+    then:
+      - light.turn_on:
+          id: led_light
+          brightness: !lambda 'return id(last_led_brightness);'
 
 esp32:
   variant: esp32
@@ -41,23 +47,18 @@ globals:
     restore_value: true
     initial_value: '0.7' # default for first boot (0.0 - 1.0)
 
-# Restore saved brightness at boot
-on_boot:
-  then:
-    - lambda: |-
-        ESP_LOGI("main", "Restoring LED brightness: %.3f", (double)id(last_led_brightness));
-    - light.turn_on:
-        id: led_light
-        brightness: !lambda 'return id(last_led_brightness);'
+  - id: min_light_pc
+    type: float
+    initial_value: '0.1'
+
+
 
 light:
   - platform: monochromatic
     name: LED
     id: led_light
     output: LED
-    on_brightness_set:
-      then:
-        - lambda: 'id(last_led_brightness) = brightness;'
+    default_transition_length: 0s
 
 output:
   - platform: template
@@ -111,7 +112,7 @@ sensor:
 
   - platform: ntc
     sensor: temp_resistance_reading
-    name: ${device_name} Temperature
+    name: Temperature
     calibration:
       b_constant: 3350
       reference_resistance: 10kOhm
@@ -120,7 +121,7 @@ sensor:
   - platform: adc
     pin: GPIO34
     attenuation: 12db
-    name: ${device_name} Voltage
+    name: Voltage
     accuracy_decimals: 1
     filters:
       - multiply: 10.85
@@ -128,7 +129,7 @@ sensor:
   - platform: adc
     pin: GPIO35
     attenuation: 12db
-    name: ${device_name} Current
+    name: Current
     accuracy_decimals: 2
     filters:
       - offset: -0.794
@@ -144,20 +145,16 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 2 # for 10k pullup
+      - multiply: 1.23951219512 #  correction
       - multiply: 0.303030 # 1/3.3v to range 0-1
       - sliding_window_moving_average:
           window_size: 20
-          send_every: 1
-    on_raw_value:
-      then:
-        - logger.log:
-            format: "Potentiometer raw ADC (pre-filters): %.6f"
-            args: [ 'x' ]
+          send_every: 5
     on_value:
-      then:
-        - light.turn_on:
-            id: led_light
-            brightness: !lambda >
-              if (x < 0.0) x = 0.0;
-              if (x > 1.0) x = 1.0;
-              return x;
+      - lambda: |-
+          if (abs(id(last_led_brightness) - x) > 0.01) {
+            id(last_led_brightness) = x;
+            if (x <= id(min_light_pc)) id(led_light).make_call().set_brightness(id(min_light_pc)).perform();
+            else if (x >= 1) id(led_light).make_call().set_brightness(1).perform();
+            else id(led_light).make_call().set_brightness(x).perform();
+          }
