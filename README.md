@@ -8,6 +8,7 @@ The project is licensed under [GNU General Public License Version 3](https://www
 
 The design is built so that minimal electronics and soldering work is required. A 10-meter LED strip is cut into 4 equal sections and is wrapped around the cube's guide channels. Each strip's end arrives at the top of the cube, where it transitions to the top face. The electronics operate at 24V to allow the Shelly controller to switch more power for the same current.
 
+A complete build guide, including sourcing tips and step-by-step construction manual can be found on our [wiki page](https://wiki.teamclockworks.ro/en/Projects/boron).
 
 | ![](Images/boron1.png) | ![](Images/boron2.png) | ![](Images/boron3.png) | ![](Images/boron4.png) | 
 | -- | -- | -- | -- |
