@@ -59,6 +59,7 @@ light:
     id: led_light
     output: LED
     default_transition_length: 0s
+    gamma_correct: 1.9
 
 output:
   - platform: template
@@ -131,9 +132,13 @@ sensor:
     attenuation: 12db
     name: Current
     accuracy_decimals: 2
+    update_interval: 100ms
     filters:
-      - offset: -0.794
       - multiply: 16.13
+      - offset: -12.53
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 10
     unit_of_measurement: A
 
   - platform: adc
