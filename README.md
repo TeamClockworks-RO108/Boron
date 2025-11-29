@@ -1,4 +1,7 @@
 # Boron
+
+![license](https://img.shields.io/github/license/TeamClockworks-RO108/Boron?style=flat-square) ![last commit](https://img.shields.io/github/last-commit/TeamClockworks-RO108/Boron?style=flat-square) ![status](https://img.shields.io/badge/status-working-green?style=flat-square) ![repo-size](https://img.shields.io/github/repo-size/TeamClockworks-RO108/Boron?style=flat-square)
+
 Boron is a DYI light cube for branding purposes, inspired by Voron printer frame construction.
 
 
